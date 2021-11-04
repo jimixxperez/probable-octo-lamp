@@ -14,11 +14,13 @@
 
 namespace ex = entityx;
 
-class SpawnSystem: public ex::System<SpawnSystem>
+class ColumnRenderSystem: public ex::System<ColumnRenderSystem>
 {
   public:
-    explicit SpawnSystem(){};
+    explicit ColumnRenderSystem(sf::RenderTarget &target) : target(target){};
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override;
+  private:
+    sf::RenderTarget &target;
 };
 
 class ControllableSystem: public ex::System<ControllableSystem>

@@ -49,7 +49,7 @@ void ProjectileSystem::update(ex::EntityManager &es, ex::EventManager &events, e
         auto dir = sf::Vector2i(projectile.position) - Application::gamestate->curr_mouse_pos;
         auto acc = - sf::Vector2f(dir) / norm(dir);
         entity.assign<Projectile>(projectile.position, acc);
-        entity.assign<CollisionShape>(10.0f);
+        entity.assign<CollisionShape>(20);
         std::cout << "emit Projectile" << std::endl;
         projectile_queue.pop_back();
     }
@@ -142,23 +142,30 @@ void ControllableSystem::update(ex::EntityManager &es, ex::EventManager &events,
 void CollisionSystem::update(ex::EntityManager &es , ex::EventManager &events, ex::TimeDelta dt)
 {
     ex::ComponentHandle<CollisionShape> coll1, coll2;
+    ex::ComponentHandle<Projectile> pro1;
     ex::ComponentHandle<Body> body1, body2;
-    for (ex::Entity entity1 : es.entities_with_components(coll1, body1)) {
+    for (ex::Entity entity1 : es.entities_with_components(coll1, body1, pro1)) {
         for (ex::Entity entity2 : es.entities_with_components(coll2, body2)) {
             //std::cout << coll1->radius;
             if (entity1.id() == entity2.id()) continue;
             auto body_distance = norm(sf::Vector2i(body1->position) - sf::Vector2i(body2->position));
             if (body_distance <= (coll1->radius + coll2->radius)) {
                 std::cout << "collision" << std::endl;
+                pro1->velocity.x = 0.5;
+                pro1->velocity.y = 0.5;
             }
         }
     }
 }
 
-void SpawnSystem::update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt)
+void ColumnRenderSystem::update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt)
 {
-    //std::cout << "Spawn system" << std::endl;
-    ex::Entity player = es.create();
-    player.assign<Controllable>();
-    player.assign<Body>(sf::Vector2f(20,20), sf::Vector2f(10,10));
+    es.each<Body,CollisionShape,StaticObject>(
+        [this](ex::Entity entity, Body &body, CollisionShape &coll, StaticObject &so) {
+            sf::CircleShape shape(coll.radius);
+            shape.setFillColor(sf::Color(0, 0, 0));
+            shape.setPosition(body.position);
+            target.draw(shape);
+        }
+    );
 };

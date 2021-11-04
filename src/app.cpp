@@ -30,9 +30,22 @@ void init_player (sf::RenderTarget &target, ex::EntityManager &es)
     //player.assign<Renderable>(std::shared_ptr<sf::Shape>(new sf::CircleShape(80,3)));
 }
 
+void init_column(sf::RenderTarget &target, ex::EntityManager &es)
+{
+  auto col = es.create();
+  col.assign<Body>(sf::Vector2f(50,80), sf::Vector2f(10,10));
+  col.assign<StaticObject>();
+  col.assign<CollisionShape>(100);
+  sf::CircleShape shape(20);
+  shape.setFillColor(sf::Color(100, 250, 50));
+  shape.setPosition(sf::Vector2f(50,80));
+  target.draw(shape);
+}
+
 void init_components (sf::RenderTarget &target, ex::EntityManager &es) 
 {
   init_player(target, es);
+  init_column(target, es);
 }
 
 Application::Application() : window()
@@ -57,6 +70,7 @@ void Application::init_systems()
 {
   systems.add<PlayerRenderSystem>(window);
   systems.add<ProjectileSystem>(window);
+  systems.add<ColumnRenderSystem>(window);
   systems.add<ControllableSystem>();
   systems.add<CollisionSystem>();
   systems.configure();
