@@ -146,7 +146,6 @@ void CollisionSystem::update(ex::EntityManager &es , ex::EventManager &events, e
     ex::ComponentHandle<Body> body1, body2;
     for (ex::Entity entity1 : es.entities_with_components(coll1, body1, pro1)) {
         for (ex::Entity entity2 : es.entities_with_components(coll2, body2)) {
-            //std::cout << coll1->radius;
             if (entity1.id() == entity2.id()) continue;
             auto body_distance = norm(sf::Vector2i(body1->position) - sf::Vector2i(body2->position));
             if (body_distance <= (coll1->radius + coll2->radius)) {
