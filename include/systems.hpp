@@ -60,6 +60,8 @@ class CollisionSystem : public ex::System<CollisionSystem>
   public:
     explicit CollisionSystem(){};
     void update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) override;
+  private:
+    std::map<uint64_t, std::vector<uint64_t> > current_collisions;
 };
 
 #endif

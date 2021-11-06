@@ -96,14 +96,11 @@ void ControllableSystem::configure(entityx::EventManager &event_manager)
 void ControllableSystem::update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt)
 {
     std::map<sf::Keyboard::Key, bool> &keyboard = Application::gamestate->keyboard;
-    es.each<Body,Controllable>(
-        [&events, &keyboard, &dt](
-            ex::Entity entity,
-            Body &body,
-            const Controllable &controllable
-        ){
+    ex::ComponentHandle<Body> body;
+    ex::ComponentHandle<Controllable> controllable;
+    for (ex::Entity entity : es.entities_with_components(body, controllable)) {
         sf::Vector2f acc(0,0);
-        for (auto const& v: controllable.key_mapping)
+        for (auto const& v: controllable->key_mapping)
         {
             auto key = v.first;
             auto action = v.second;
@@ -126,17 +123,16 @@ void ControllableSystem::update(ex::EntityManager &es, ex::EventManager &events,
                     break;
                 case Action::shoot:
                     keyboard[sf::Keyboard::Space] = false;
-                    events.emit<Projectile>(body.position, body.direction);
+                    events.emit<Projectile>(body->position, body->direction);
                     break;
                 default:
                     std::cout << "Unknown Action" << std::endl;
                     break;
             }
-            body.position += (10000.0f * acc * (float) dt * (float) dt);
-            body.direction = acc;
+            body->position += (10000.0f * acc * (float) dt * (float) dt);
+            body->direction = acc;
         }
-
-    });
+    }
 }
 
 void CollisionSystem::update(ex::EntityManager &es , ex::EventManager &events, ex::TimeDelta dt)
@@ -147,11 +143,23 @@ void CollisionSystem::update(ex::EntityManager &es , ex::EventManager &events, e
     for (ex::Entity entity1 : es.entities_with_components(coll1, body1, pro1)) {
         for (ex::Entity entity2 : es.entities_with_components(coll2, body2)) {
             if (entity1.id() == entity2.id()) continue;
-            auto body_distance = norm(sf::Vector2i(body1->position) - sf::Vector2i(body2->position));
+            auto normal_vec = body1->position - body2->position;
+            auto body_distance = norm(normal_vec);
+            auto search = coll1->in_collision_with.find(entity2.id());
             if (body_distance <= (coll1->radius + coll2->radius)) {
                 std::cout << "collision" << std::endl;
-                pro1->velocity.x = 0.5;
-                pro1->velocity.y = 0.5;
+                if (search == coll1->in_collision_with.end()) {
+                    coll1->in_collision_with.insert(entity2.id());
+                    auto n = (normal_vec / body_distance);
+                    auto l = (pro1->velocity / norm(pro1->velocity));
+                    auto new_velocity = -2*(n.x*l.x + n.y * l.y) * (n-l);
+                    pro1->velocity = new_velocity / norm(new_velocity);
+                }
+            } else {
+                if(search != coll1->in_collision_with.end()) {
+                    coll1->in_collision_with.erase(entity2.id()); 
+                    std::cout << "remove from collision"  << std::endl; 
+                }
             }
         }
     }
@@ -161,9 +169,11 @@ void ColumnRenderSystem::update(ex::EntityManager &es, ex::EventManager &events,
 {
     es.each<Body,CollisionShape,StaticObject>(
         [this](ex::Entity entity, Body &body, CollisionShape &coll, StaticObject &so) {
+            std::cout << body.position.x << " - " << body.position.y << std::endl;
             sf::CircleShape shape(coll.radius);
             shape.setFillColor(sf::Color(0, 0, 0));
-            shape.setPosition(body.position);
+            shape.setPosition(body.position.x - coll.radius, body.position.y - coll.radius);
+            shape.setOrigin(body.position.x - coll.radius, body.position.y - coll.radius);
             target.draw(shape);
         }
     );

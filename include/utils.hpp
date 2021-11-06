@@ -9,12 +9,20 @@ inline float r(int a, float b = 0) {
   return static_cast<float>(std::rand() % (a * 1000) + b * 1000) / 1000.0;
 }
 
-inline float norm(sf::Vector2i vec)
+template<typename T>
+float dot(T vec1, T vec2)
 {
-  return (float)std::sqrt(vec.x*vec.x + vec.y * vec.y);
+  return static_cast<float>(vec1.x*vec2.x + vec1.y * vec2.y);
 }
 
-inline float angle_vec(sf::Vector2i vec1, sf::Vector2i vec2)
+template<typename T>
+float norm(T vec)
+{
+  return static_cast<float>(std::sqrt(dot(vec,vec)));
+}
+
+template<typename T>
+inline float angle_vec(T vec1, T vec2)
 {
   return 57.0f * std::acos(
     (

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <math.h>
 #include <random>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
@@ -32,14 +33,23 @@ void init_player (sf::RenderTarget &target, ex::EntityManager &es)
 
 void init_column(sf::RenderTarget &target, ex::EntityManager &es)
 {
-  auto col = es.create();
-  col.assign<Body>(sf::Vector2f(50,80), sf::Vector2f(10,10));
-  col.assign<StaticObject>();
-  col.assign<CollisionShape>(100);
-  sf::CircleShape shape(20);
-  shape.setFillColor(sf::Color(100, 250, 50));
-  shape.setPosition(sf::Vector2f(50,80));
-  target.draw(shape);
+  auto target_center = sf::Vector2f(target.getSize()) / 2.0f;
+  auto angles = {60,120,180,240,300,360};
+  float radius = 300.0f;
+  ex::Entity col;
+  for (auto const &angle : angles) {
+    col = es.create();
+    auto x = target_center.x + radius * std::cos(angle);
+    auto y = target_center.y + radius * std::sin(angle);
+    col.assign<Body>(sf::Vector2f(x,y), sf::Vector2f(10,10));
+    col.assign<StaticObject>();
+    col.assign<CollisionShape>(50);
+  }
+
+  //sf::CircleShape shape(100);
+  //shape.setFillColor(sf::Color(100, 250, 50));
+  //shape.setPosition(sf::Vector2f(200,200));
+  //target.draw(shape);
 }
 
 void init_components (sf::RenderTarget &target, ex::EntityManager &es) 
@@ -108,7 +118,7 @@ void Application::handleEvent()
 void Application::run()
 {
   sf::Clock clock;
-  const float rate = 50.0f;
+  const float rate = 60.0f;
   std::cout << "run" << std::endl;
   std::cout << "window open " << window.isOpen() <<std::endl;
   while(window.isOpen())

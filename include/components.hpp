@@ -1,12 +1,16 @@
 #ifndef COMPONENTS
 #define COMPONENTS
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <random>
+#include <set>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <entityx/entityx.h>
+
+namespace ex = entityx;
 
 enum Action {
   move_left,
@@ -44,8 +48,9 @@ struct Particle {
 };
 
 struct CollisionShape {
-  explicit CollisionShape(float radius) : radius(radius) {};
+  CollisionShape(float radius) : radius(radius) {};
   float radius;
+  std::set<ex::Entity::Id> in_collision_with;
 };
 
 struct StaticObject {
