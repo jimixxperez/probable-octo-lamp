@@ -11,7 +11,7 @@ Player::Player(){
 
         sf::Rect<int> texRect; 
         if (part == "hat") texRect = {0,0,100,140};
-        else if (part == "right_arm" || part == "left_arm") texRect = {100,0,50,140};
+        else if (part == "right_arm" || part == "left_arm") texRect = {101,0,50,140};
         else texRect = {0,0,200,100};
 
         sprite.setTextureRect(texRect);

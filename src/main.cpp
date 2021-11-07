@@ -12,7 +12,7 @@ namespace ex = entityx;
 
 int main(int argc, const char* argv[]) 
 {
-    Application app(2000,800);
+    Application app(2000,1500);
     app.run();
     return 0;
 }

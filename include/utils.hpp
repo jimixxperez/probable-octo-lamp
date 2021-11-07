@@ -21,6 +21,13 @@ float norm(T vec)
   return static_cast<float>(std::sqrt(dot(vec,vec)));
 }
 
+const double PI = 3.14159265359;
+ 
+template<typename T>
+float degree_to_rad(T rad) {
+  return static_cast<float>(2*PI*rad/360);
+}
+
 template<typename T>
 inline float angle_vec(T vec1, T vec2)
 {

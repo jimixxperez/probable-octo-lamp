@@ -10,9 +10,10 @@
 void PlayerRenderSystem::update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt) {
     es.each<Player, Body>([this](ex::Entity entity, Player &player, Body &body){
 
-        auto angle = angle_vec(sf::Vector2i(0,-1), sf::Vector2i(body.direction));
-        auto pos = Application::gamestate->curr_mouse_pos - sf::Vector2i(body.position);
-        auto arm_angle = angle_vec(sf::Vector2i(0,-1), pos);
+        sf::Vector2f ref_vec(0,-1);
+        auto angle = angle_vec(ref_vec, body.direction);
+        auto pos = sf::Vector2f(Application::gamestate->curr_mouse_pos) - body.position;
+        auto arm_angle = angle_vec(ref_vec, pos);
 
         if (Application::gamestate->curr_mouse_pos.x < body.position.x) arm_angle = 360 - arm_angle;
         if (body.direction.x < 0) angle = 360 - angle;
@@ -129,8 +130,12 @@ void ControllableSystem::update(ex::EntityManager &es, ex::EventManager &events,
                     std::cout << "Unknown Action" << std::endl;
                     break;
             }
-            body->position += (10000.0f * acc * (float) dt * (float) dt);
-            body->direction = acc;
+            if (norm(acc)) {
+                acc = acc / norm(acc);
+                std::cout << acc.x << "-" << acc.y << std::endl;
+                body->position += (20000.0f * acc * (float) dt * (float) dt);
+                body->direction = acc;
+            }
         }
     }
 }
@@ -169,11 +174,10 @@ void ColumnRenderSystem::update(ex::EntityManager &es, ex::EventManager &events,
 {
     es.each<Body,CollisionShape,StaticObject>(
         [this](ex::Entity entity, Body &body, CollisionShape &coll, StaticObject &so) {
-            std::cout << body.position.x << " - " << body.position.y << std::endl;
             sf::CircleShape shape(coll.radius);
             shape.setFillColor(sf::Color(0, 0, 0));
             shape.setPosition(body.position.x - coll.radius, body.position.y - coll.radius);
-            shape.setOrigin(body.position.x - coll.radius, body.position.y - coll.radius);
+            //shape.setOrigin(body.position.x - coll.radius, body.position.y - coll.radius);
             target.draw(shape);
         }
     );

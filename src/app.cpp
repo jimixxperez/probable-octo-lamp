@@ -10,6 +10,7 @@
 #include "systems.hpp"
 #include "components.hpp"
 #include "player/component.hpp"
+#include "utils.hpp"
 
 namespace ex = entityx;
 
@@ -31,16 +32,18 @@ void init_player (sf::RenderTarget &target, ex::EntityManager &es)
     //player.assign<Renderable>(std::shared_ptr<sf::Shape>(new sf::CircleShape(80,3)));
 }
 
-void init_column(sf::RenderTarget &target, ex::EntityManager &es)
+void init_columns(sf::RenderTarget &target, ex::EntityManager &es)
 {
   auto target_center = sf::Vector2f(target.getSize()) / 2.0f;
   auto angles = {60,120,180,240,300,360};
-  float radius = 300.0f;
+  float radius = (target_center.y - 350) / degree_to_rad(30);
+  //float radius = 500.0f;
   ex::Entity col;
   for (auto const &angle : angles) {
     col = es.create();
-    auto x = target_center.x + radius * std::cos(angle);
-    auto y = target_center.y + radius * std::sin(angle);
+    auto rad = degree_to_rad(angle);
+    auto x = target_center.x + radius * std::cos(rad);
+    auto y = target_center.y + radius * std::sin(rad);
     col.assign<Body>(sf::Vector2f(x,y), sf::Vector2f(10,10));
     col.assign<StaticObject>();
     col.assign<CollisionShape>(50);
@@ -55,7 +58,7 @@ void init_column(sf::RenderTarget &target, ex::EntityManager &es)
 void init_components (sf::RenderTarget &target, ex::EntityManager &es) 
 {
   init_player(target, es);
-  init_column(target, es);
+  init_columns(target, es);
 }
 
 Application::Application() : window()
@@ -70,7 +73,10 @@ Application::Application() : window()
 Application::Application(uint16_t width, uint16_t height) : window()
 {
   Application::gamestate = std::unique_ptr<GameState>(std::move(new GameState()));
-  window.create(sf::VideoMode(width, height), "Guaca");
+  sf::ContextSettings settings;
+  settings.antialiasingLevel = 8;
+
+  window.create(sf::VideoMode(width, height), "Guaca", sf::Style::Default, settings);
   init_systems();
   init_components(window, entities);
 
