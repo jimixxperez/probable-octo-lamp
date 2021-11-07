@@ -89,11 +89,6 @@ void ControllableSystem::configure(entityx::EventManager &event_manager)
     //event_manager.subscribe<Action>(*this);
 }
 
-///void ControllableSystem::receive(const Action action)
-//{
-    //event_manager_.emit<Projectile>({0,0}, {0,0});
-//}
-
 void ControllableSystem::update(ex::EntityManager &es, ex::EventManager &events, ex::TimeDelta dt)
 {
     std::map<sf::Keyboard::Key, bool> &keyboard = Application::gamestate->keyboard;
