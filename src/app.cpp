@@ -14,11 +14,6 @@
 
 namespace ex = entityx;
 
-// class GameState
-// {
-//   public:
-//     std::map<sf::Keyboard::Key, bool> keyboard;
-// };
 
 std::unique_ptr<GameState> Application::gamestate;
 
@@ -29,7 +24,6 @@ void init_player (sf::RenderTarget &target, ex::EntityManager &es)
     player.assign<Body>(sf::Vector2f(20,20), sf::Vector2f(10,10));
     player.assign<Particle>(sf::Color::Green, 40.0f, 2);
     player.assign<Player>();
-    //player.assign<Renderable>(std::shared_ptr<sf::Shape>(new sf::CircleShape(80,3)));
 }
 
 void init_columns(sf::RenderTarget &target, ex::EntityManager &es)
@@ -48,11 +42,6 @@ void init_columns(sf::RenderTarget &target, ex::EntityManager &es)
     col.assign<StaticObject>();
     col.assign<CollisionShape>(50);
   }
-
-  //sf::CircleShape shape(100);
-  //shape.setFillColor(sf::Color(100, 250, 50));
-  //shape.setPosition(sf::Vector2f(200,200));
-  //target.draw(shape);
 }
 
 void init_components (sf::RenderTarget &target, ex::EntityManager &es) 
