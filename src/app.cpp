@@ -24,6 +24,7 @@ void init_player (sf::RenderTarget &target, ex::EntityManager &es)
     player.assign<Body>(sf::Vector2f(20,20), sf::Vector2f(10,10));
     player.assign<Particle>(sf::Color::Green, 40.0f, 2);
     player.assign<Player>();
+    player.assign<CollisionShape>(100);
 }
 
 void init_columns(sf::RenderTarget &target, ex::EntityManager &es)

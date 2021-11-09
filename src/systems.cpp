@@ -14,6 +14,7 @@ void PlayerRenderSystem::update(ex::EntityManager &es, ex::EventManager &events,
         auto angle = angle_vec(ref_vec, body.direction);
         auto pos = sf::Vector2f(Application::gamestate->curr_mouse_pos) - body.position;
         auto arm_angle = angle_vec(ref_vec, pos);
+        std::cout << arm_angle << "-" << angle << std::endl;
 
         if (Application::gamestate->curr_mouse_pos.x < body.position.x) arm_angle = 360 - arm_angle;
         if (body.direction.x < 0) angle = 360 - angle;
@@ -127,7 +128,7 @@ void ControllableSystem::update(ex::EntityManager &es, ex::EventManager &events,
             }
             if (norm(acc)) {
                 acc = acc / norm(acc);
-                std::cout << acc.x << "-" << acc.y << std::endl;
+                //std::cout << acc.x << "-" << acc.y << std::endl;
                 body->position += (20000.0f * acc * (float) dt * (float) dt);
                 body->direction = acc;
             }
@@ -138,28 +139,44 @@ void ControllableSystem::update(ex::EntityManager &es, ex::EventManager &events,
 void CollisionSystem::update(ex::EntityManager &es , ex::EventManager &events, ex::TimeDelta dt)
 {
     ex::ComponentHandle<CollisionShape> coll1, coll2;
-    ex::ComponentHandle<Projectile> pro1;
     ex::ComponentHandle<Body> body1, body2;
-    for (ex::Entity entity1 : es.entities_with_components(coll1, body1, pro1)) {
+    ex::ComponentHandle<Projectile> pro1, pro2;
+    ex::ComponentHandle<StaticObject> stat1, stat2;
+    for (ex::Entity entity1 : es.entities_with_components(coll1, body1)) {
         for (ex::Entity entity2 : es.entities_with_components(coll2, body2)) {
+
+            es.unpack<Projectile, StaticObject>(entity1.id(), pro1, stat1);
+            es.unpack<Projectile, StaticObject>(entity2.id(), pro2, stat2);
+
             if (entity1.id() == entity2.id()) continue;
             auto normal_vec = body1->position - body2->position;
             auto body_distance = norm(normal_vec);
             auto search = coll1->in_collision_with.find(entity2.id());
-            if (body_distance <= (coll1->radius + coll2->radius)) {
-                std::cout << "collision" << std::endl;
-                if (search == coll1->in_collision_with.end()) {
-                    coll1->in_collision_with.insert(entity2.id());
-                    auto n = (normal_vec / body_distance);
-                    auto l = (pro1->velocity / norm(pro1->velocity));
-                    auto new_velocity = -2*(n.x*l.x + n.y * l.y) * (n-l);
-                    pro1->velocity = new_velocity / norm(new_velocity);
+            // reflection of projectile on static objects
+            if (pro1 && stat2) {
+                if (body_distance <= (coll1->radius + coll2->radius)) {
+                    std::cout << "collision" << std::endl;
+                    if (search == coll1->in_collision_with.end()) {
+                        coll1->in_collision_with.insert(entity2.id());
+                        auto n = (normal_vec / body_distance);
+                        auto l = (pro1->velocity / norm(pro1->velocity));
+                        auto new_velocity = -2*(n.x*l.x + n.y * l.y) * (n-l);
+                        pro1->velocity = new_velocity / norm(new_velocity);
+                    }
+                } else {
+                    if(search != coll1->in_collision_with.end()) {
+                        coll1->in_collision_with.erase(entity2.id()); 
+                        std::cout << "remove from collision"  << std::endl; 
+                    }
                 }
-            } else {
-                if(search != coll1->in_collision_with.end()) {
-                    coll1->in_collision_with.erase(entity2.id()); 
-                    std::cout << "remove from collision"  << std::endl; 
+            } 
+            // make static objects inpenetrable for player
+            else if (stat2){
+                if (body_distance <= (coll1->radius + coll2->radius)) {
+                    auto n = (normal_vec / body_distance) * 3.0f * coll2->radius;
+                    body1->position = body2->position + n;
                 }
+
             }
         }
     }
